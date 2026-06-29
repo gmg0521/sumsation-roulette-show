@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>천국의 룰렛 소개 Show</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">🎡</span>
+        <h1>천국의 룰렛 소개 Show</h1>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="app-main">
+      <!-- Left Column: Wheel Section -->
+      <section class="wheel-section">
+        <div class="wheel-wrapper">
+          <canvas id="wheelCanvas" width="500" height="500"></canvas>
+          <div class="wheel-pointer"></div>
+        </div>
+        <button id="spinBtn" class="btn btn-primary btn-lg">돌리기!</button>
+      </section>
+
+      <!-- Right Column: Control & Input Section -->
+      <section class="control-section">
+        <div class="card glass">
+          <div class="card-header">
+            <h2>참가자 목록</h2>
+            <div class="header-actions">
+              <button id="shuffleBtn" class="btn btn-secondary btn-sm" title="순서 섞기">🔀 섞기</button>
+              <button id="clearBtn" class="btn btn-danger btn-sm" title="전체 삭제">🗑️ 비우기</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="preset-wrapper">
+              <label for="presetSelect">🎯 프리셋 불러오기</label>
+              <select id="presetSelect" class="preset-select">
+                <option value="">-- 직접 입력 또는 프리셋 선택 --</option>
+                <option value="preset1">1. 주제 카드 (수련회 등)</option>
+              </select>
+            </div>
+            <textarea id="entryInput" placeholder="주제를 입력하세요" spellcheck="false"></textarea>
+          </div>
+          <div class="card-footer">
+            <span class="entry-count">항목 수: <strong id="entryCount">0</strong>개</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Winner Modal (Popup) -->
+    <div id="winnerModal" class="modal-overlay hidden">
+      <div class="modal-content glass animate-pop">
+        <div class="modal-confetti"></div>
+        <div class="modal-header">
+          <h3>🎉🎉🎉</h3>
+        </div>
+        <div class="modal-body">
+          <div id="winnerName" class="winner-display">당첨자</div>
+        </div>
+        <div class="modal-footer">
+          <button id="removeWinnerBtn" class="btn btn-danger">목록에서 제거</button>
+          <button id="closeModalBtn" class="btn btn-secondary">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas Confetti Library for Winner Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
