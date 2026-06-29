@@ -76,8 +76,30 @@ body {
    Header Section
    ========================================================================== */
 .app-header {
+  position: relative;
   text-align: center;
   margin-bottom: 0.5rem;
+}
+
+.present-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 600px) {
+  .present-toggle {
+    position: static;
+    transform: none;
+    margin-top: 0.75rem;
+  }
+}
+
+/* These buttons are hidden until presentation mode is active */
+.exit-present,
+.present-shuffle {
+  display: none;
 }
 
 .app-header .logo {
@@ -142,6 +164,15 @@ body {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
+}
+
+/* 돌리기/섞기 버튼을 감싸는 행 (기본: 돌리기 버튼만 중앙 전체폭) */
+.action-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .wheel-wrapper {
@@ -518,4 +549,89 @@ body {
   50% {
     transform: scale(1.05);
   }
+}
+
+/* ==========================================================================
+   Presentation Mode (빔프로젝터용 큰 화면)
+   ========================================================================== */
+body.presentation-mode {
+  overflow: hidden;
+}
+
+/* 입력 패널과 헤더 숨기고 룰렛만 화면 가득 */
+body.presentation-mode .app-header,
+body.presentation-mode .control-section {
+  display: none;
+}
+
+body.presentation-mode .app-container {
+  max-width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  padding: 1.5rem;
+  gap: 0;
+  justify-content: center;
+}
+
+body.presentation-mode .app-main {
+  grid-template-columns: 1fr;
+  height: 100%;
+}
+
+body.presentation-mode .wheel-section {
+  height: 100%;
+  gap: 2rem;
+}
+
+/* 룰렛을 화면 높이에 맞춰 크게 (버튼 행 공간 확보를 위해 약간 여유) */
+body.presentation-mode .wheel-wrapper {
+  max-width: min(72vh, 90vw);
+  padding: 16px;
+}
+
+/* 돌리기/섞기 버튼을 좌우로 나란히 배치 */
+body.presentation-mode .action-row {
+  flex-direction: row;
+  justify-content: center;
+  width: auto;
+  gap: 1.5rem;
+}
+
+/* 돌리기 버튼도 크게 (행 안에서는 전체폭 X) */
+body.presentation-mode .btn-lg {
+  width: auto;
+  max-width: none;
+  padding: 1.2rem 2.5rem;
+  font-size: 1.6rem;
+}
+
+/* 발표 모드일 때만 종료 버튼 표시 */
+body.presentation-mode .exit-present {
+  display: inline-flex;
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+body.presentation-mode .exit-present:hover {
+  opacity: 1;
+}
+
+/* 발표 모드일 때만 섞기 버튼 표시 (돌리기 버튼과 같은 높이) */
+body.presentation-mode .present-shuffle {
+  display: inline-flex;
+  padding: 1.2rem 2rem;
+  font-size: 1.6rem;
+  border-radius: 12px;
+}
+
+/* 발표 모드 당첨 팝업은 훨씬 크게 */
+body.presentation-mode .modal-content {
+  max-width: 700px;
+}
+
+body.presentation-mode .winner-display {
+  font-size: 4rem;
 }

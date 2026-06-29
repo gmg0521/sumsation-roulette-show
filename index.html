@@ -18,6 +18,7 @@
         <span class="logo-icon">🎡</span>
         <h1>천국의 룰렛 소개 Show</h1>
       </div>
+      <button id="presentBtn" class="btn btn-secondary btn-sm present-toggle" title="빔프로젝터용 큰 화면">📺 발표 모드</button>
     </header>
 
     <!-- Main Content Grid -->
@@ -28,7 +29,11 @@
           <canvas id="wheelCanvas" width="500" height="500"></canvas>
           <div class="wheel-pointer"></div>
         </div>
-        <button id="spinBtn" class="btn btn-primary btn-lg">돌리기!</button>
+        <div class="action-row">
+          <button id="spinBtn" class="btn btn-primary btn-lg">돌리기!</button>
+          <button id="presentShuffleBtn" class="btn btn-secondary present-shuffle" title="순서 섞기">🔀 섞기</button>
+        </div>
+        <button id="exitPresentBtn" class="btn btn-secondary btn-sm exit-present" title="발표 모드 종료">✕ 발표 모드 종료</button>
       </section>
 
       <!-- Right Column: Control & Input Section -->

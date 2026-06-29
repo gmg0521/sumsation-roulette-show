@@ -4,6 +4,23 @@
 
 const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
+
+// Device pixel ratio for crisp rendering on large projector screens
+let dpr = window.devicePixelRatio || 1;
+
+/**
+ * Resizes the canvas backing store to match its on-screen (CSS) size,
+ * multiplied by the device pixel ratio so the wheel stays sharp when
+ * enlarged for a beam projector. Redraws afterwards.
+ */
+function resizeCanvas() {
+  const cssSize = Math.min(canvas.clientWidth, canvas.clientHeight);
+  if (cssSize <= 0) return;
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(cssSize * dpr);
+  canvas.height = Math.round(cssSize * dpr);
+  drawWheel();
+}
 const entryInput = document.getElementById('entryInput');
 const entryCountDisplay = document.getElementById('entryCount');
 const spinBtn = document.getElementById('spinBtn');
@@ -124,10 +141,14 @@ function updateEntriesFromInput() {
  * Draws the roulette wheel on the HTML5 Canvas
  */
 function drawWheel() {
-  const size = canvas.width;
+  // Logical (CSS-pixel) size; backing store is size * dpr for sharpness
+  const size = Math.min(canvas.width, canvas.height) / dpr;
+  const scale = size / 500; // 500 is the original design size; scale fonts/elements to match
   const center = size / 2;
-  const radius = center - 10;
-  
+  const radius = center - 10 * scale;
+
+  // Reset transform and scale so we can draw in logical pixels
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, size, size);
 
   if (entries.length === 0) {
@@ -136,11 +157,11 @@ function drawWheel() {
     ctx.fillStyle = '#1e293b';
     ctx.fill();
     ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 4 * scale;
     ctx.stroke();
 
     ctx.fillStyle = '#94a3b8';
-    ctx.font = '16px Outfit, Noto Sans KR';
+    ctx.font = `${16 * scale}px Outfit, Noto Sans KR`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('주제를 입력해 주세요', center, center);
@@ -179,17 +200,18 @@ function drawWheel() {
     let fontSize = 18;
     if (entries.length > 20) fontSize = 12;
     else if (entries.length > 12) fontSize = 14;
-    
+    fontSize *= scale;
+
     ctx.font = `bold ${fontSize}px Outfit, Noto Sans KR`;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetX = 1;
-    ctx.shadowOffsetY = 1;
 
-    const textX = radius - 30;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 4 * scale;
+    ctx.shadowOffsetX = 1 * scale;
+    ctx.shadowOffsetY = 1 * scale;
+
+    const textX = radius - 30 * scale;
     const maxTextWidth = radius * 0.6;
     
     let text = entries[i];
@@ -206,20 +228,22 @@ function drawWheel() {
   ctx.restore();
 
   // 3. Center Pin
+  const pinOuter = 24 * scale;
+  const pinInner = 12 * scale;
   ctx.beginPath();
-  ctx.arc(center, center, 24, 0, 2 * Math.PI);
-  const gradient = ctx.createRadialGradient(center, center, 0, center, center, 24);
+  ctx.arc(center, center, pinOuter, 0, 2 * Math.PI);
+  const gradient = ctx.createRadialGradient(center, center, 0, center, center, pinOuter);
   gradient.addColorStop(0, '#ffffff');
   gradient.addColorStop(0.3, '#cbd5e1');
   gradient.addColorStop(1, '#475569');
   ctx.fillStyle = gradient;
   ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetY = 4;
+  ctx.shadowBlur = 10 * scale;
+  ctx.shadowOffsetY = 4 * scale;
   ctx.fill();
 
   ctx.beginPath();
-  ctx.arc(center, center, 12, 0, 2 * Math.PI);
+  ctx.arc(center, center, pinInner, 0, 2 * Math.PI);
   ctx.fillStyle = '#0f172a';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
@@ -410,6 +434,35 @@ function handlePresetChange() {
   }
 }
 
+const presentBtn = document.getElementById('presentBtn');
+const exitPresentBtn = document.getElementById('exitPresentBtn');
+const presentShuffleBtn = document.getElementById('presentShuffleBtn');
+
+/**
+ * Enters presentation mode: hides input panel, enlarges the wheel to fill
+ * the screen, and tries to go fullscreen for beam projector display.
+ */
+function enterPresentationMode() {
+  document.body.classList.add('presentation-mode');
+  // Try fullscreen (ignored if the browser blocks it without a gesture)
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  // Resize after layout has updated to the new larger wrapper
+  requestAnimationFrame(resizeCanvas);
+}
+
+/**
+ * Exits presentation mode and returns to the normal editing layout.
+ */
+function exitPresentationMode() {
+  document.body.classList.remove('presentation-mode');
+  if (document.fullscreenElement && document.exitFullscreen) {
+    document.exitFullscreen().catch(() => {});
+  }
+  requestAnimationFrame(resizeCanvas);
+}
+
 /**
  * Initialize application
  */
@@ -428,10 +481,24 @@ function init() {
   removeWinnerBtn.addEventListener('click', removeLastWinner);
   closeModalBtn.addEventListener('click', closeWinnerModal);
 
+  // Presentation (projector) mode listeners
+  presentBtn.addEventListener('click', enterPresentationMode);
+  exitPresentBtn.addEventListener('click', exitPresentationMode);
+  presentShuffleBtn.addEventListener('click', handleShuffle);
+  // ESC key also exits presentation mode
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('presentation-mode')) {
+      exitPresentationMode();
+    }
+  });
+
+  // Keep the canvas resolution in sync with its on-screen size
+  window.addEventListener('resize', resizeCanvas);
+
   // Warm-up AudioContext on document body click
   document.body.addEventListener('click', initAudioContext, { once: true });
-  
-  drawWheel();
+
+  resizeCanvas();
 }
 
 // Start Application
